@@ -14,5 +14,6 @@ export async function GET(request: NextRequest, context: BookingIdRouteParams) {
 }
 
 export async function DELETE(request: NextRequest, context: BookingIdRouteParams) {
+  // DELETE performs a logical cancellation by setting status to CANCELLED.
   return withErrorHandler(() => cancelBookingController(request, context));
 }

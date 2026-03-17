@@ -1,7 +1,7 @@
 import type { Booking, BookingStatus, Pet, Prisma, Service } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import type { CreateBookingDto, ListBookingsQueryDto, UpdateBookingStatusDto } from "@/modules/bookings/dtos";
+import type { CreateBookingDto, ListBookingsQueryDto } from "@/modules/bookings/dtos";
 import type { BookingModel } from "@/modules/bookings/types";
 
 const toCreateInput = (authUserId: string, providerId: string, payload: CreateBookingDto): Prisma.BookingCreateInput => {
