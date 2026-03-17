@@ -1,26 +1,14 @@
 import { NextRequest } from "next/server";
 
 import { supabaseAdminClient } from "@/lib/supabase";
-import { AppError } from "@/shared/errors/app-error";
-import { ERROR_CODES } from "@/shared/errors/error-codes";
-import { HTTP_STATUS } from "@/shared/constants/http-status";
+import { UnauthorizedError } from "@/shared/errors/unauthorized-error";
+import type { AuthUser } from "@/shared/types/auth-user";
+import { getAuthToken } from "@/shared/utils/get-auth-token";
 
-export type AuthContext = {
-  userId: string;
-  email: string | undefined;
-};
+export type AuthContext = AuthUser;
 
 export const getAuthContext = async (request: NextRequest): Promise<AuthContext> => {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new AppError("Token de autenticacion no proporcionado.", {
-      statusCode: HTTP_STATUS.UNAUTHORIZED,
-      code: ERROR_CODES.UNAUTHORIZED
-    });
-  }
-
-  const token = authHeader.replace("Bearer ", "").trim();
+  const token = getAuthToken(request.headers.get("authorization"));
 
   const {
     data: { user },
@@ -28,15 +16,14 @@ export const getAuthContext = async (request: NextRequest): Promise<AuthContext>
   } = await supabaseAdminClient.auth.getUser(token);
 
   if (error || !user) {
-    throw new AppError("Token de autenticacion invalido.", {
-      statusCode: HTTP_STATUS.UNAUTHORIZED,
-      code: ERROR_CODES.UNAUTHORIZED,
-      details: error?.message
-    });
+    throw new UnauthorizedError("Invalid or expired authentication token.", error?.message);
   }
 
   return {
     userId: user.id,
-    email: user.email
+    email: user.email,
+    role: user.user_metadata.role as string | undefined
   };
 };
+
+export const requireAuth = getAuthContext;

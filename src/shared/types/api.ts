@@ -1,3 +1,5 @@
+import type { ErrorCode } from "@/shared/errors/error-codes";
+
 export type ApiSuccess<TData> = {
   success: true;
   message: string;
@@ -7,7 +9,7 @@ export type ApiSuccess<TData> = {
 export type ApiError = {
   success: false;
   message: string;
-  errorCode: string;
+  errorCode: ErrorCode;
   details?: unknown;
 };
 
