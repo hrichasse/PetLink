@@ -9,7 +9,7 @@ import { created } from "@/shared/responses/api-response";
 import { toHealthRecordResponseDto } from "@/modules/health-records/dtos";
 import { healthRecordsService } from "@/modules/health-records/services";
 
-const parseBody = async (request: NextRequest): Promise<unknown> => {
+async function parseBody(request: NextRequest): Promise<unknown> {
   try {
     return await request.json();
   } catch {
@@ -18,7 +18,7 @@ const parseBody = async (request: NextRequest): Promise<unknown> => {
       code: ERROR_CODES.VALIDATION_ERROR
     });
   }
-};
+}
 
 export const createHealthRecordController = async (request: NextRequest): Promise<NextResponse> => {
   const authUser = await requireAuth(request);
