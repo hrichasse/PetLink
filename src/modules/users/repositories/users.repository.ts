@@ -14,10 +14,6 @@ const toUserProfileUpdateInput = (payload: UpdateUserProfileDto): Prisma.UserPro
     data.phone = payload.phone;
   }
 
-  if (payload.avatarUrl !== undefined) {
-    data.avatarUrl = payload.avatarUrl;
-  }
-
   if (payload.city !== undefined) {
     data.city = payload.city;
   }

@@ -22,6 +22,14 @@ const parseBody = async (request: NextRequest): Promise<unknown> => {
 
 export const createServiceController = async (request: NextRequest): Promise<NextResponse> => {
   const authUser = await requireAuth(request);
+
+  if (authUser.role !== "PROVIDER") {
+    throw new AppError("Solo proveedores pueden crear servicios.", {
+      statusCode: HTTP_STATUS.FORBIDDEN,
+      code: ERROR_CODES.FORBIDDEN
+    });
+  }
+
   const body = await parseBody(request);
   const validationResult = createServiceSchema.safeParse(body);
 

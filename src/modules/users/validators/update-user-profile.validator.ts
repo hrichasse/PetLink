@@ -20,17 +20,6 @@ export const updateUserProfileSchema = z
   .object({
     fullName: z.string().trim().min(2).max(120).optional(),
     phone: optionalNullableTrimmedString(30),
-    avatarUrl: z
-      .union([z.string().url(), z.null()])
-      .optional()
-      .transform((value) => {
-        if (typeof value === "string") {
-          const trimmedValue = value.trim();
-          return trimmedValue.length === 0 ? null : trimmedValue;
-        }
-
-        return value;
-      }),
     city: optionalNullableTrimmedString(80)
   })
   .strict();

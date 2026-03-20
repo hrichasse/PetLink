@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { toUserProfileResponseDto } from "@/modules/users/dtos";
+import { toPublicUserProfileResponseDto } from "@/modules/users/dtos";
 import { usersService } from "@/modules/users/services";
 import { getUserByIdParamsSchema } from "@/modules/users/validators";
 import { HTTP_STATUS } from "@/shared/constants/http-status";
@@ -27,5 +27,5 @@ export const getUserByIdController = async ({ params }: UserIdRouteParams): Prom
 
   const profile = await usersService.getProfileById(validationResult.data.id);
 
-  return ok("User profile fetched successfully.", toUserProfileResponseDto(profile));
+  return ok("User profile fetched successfully.", toPublicUserProfileResponseDto(profile));
 };
