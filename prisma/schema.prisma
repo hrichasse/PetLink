@@ -59,6 +59,28 @@ enum NotificationStatus {
   FAILED
 }
 
+enum PaymentProvider {
+  MERCADOPAGO
+  TRANSBANK
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+  FAILED
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
 model UserProfile {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @unique @db.Uuid
@@ -78,9 +100,77 @@ model UserProfile {
   writtenReviews   Review[]          @relation("ReviewAuthor")
   receivedReviews  Review[]          @relation("ReviewProvider")
   notifications    NotificationLog[] @relation("NotificationRecipient")
+  subscriptions    Subscription[]    @relation("UserSubscriptions")
+  payments         Payment[]         @relation("UserPayments")
 
   @@index([role])
   @@index([city])
+}
+
+model Subscription {
+  id                 String             @id @default(uuid()) @db.Uuid
+  userId             String             @db.Uuid
+  planCode           String
+  status             SubscriptionStatus @default(PENDING)
+  startDate          DateTime?
+  endDate            DateTime?
+  autoRenew          Boolean            @default(true)
+  provider           PaymentProvider?
+  externalCustomerId String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user     UserProfile @relation("UserSubscriptions", fields: [userId], references: [userId], onDelete: Restrict)
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([planCode])
+  @@index([provider])
+}
+
+model Payment {
+  id                String          @id @default(uuid()) @db.Uuid
+  userId            String          @db.Uuid
+  subscriptionId    String?         @db.Uuid
+  provider          PaymentProvider
+  providerPaymentId String?
+  providerReference String?
+  status            PaymentStatus   @default(PENDING)
+  amount            Decimal         @db.Decimal(10, 2)
+  currency          String
+  description       String
+  paymentMethod     String?
+  paidAt            DateTime?
+  metadata          Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user         UserProfile   @relation("UserPayments", fields: [userId], references: [userId], onDelete: Restrict)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([provider])
+  @@index([providerReference])
+  @@unique([provider, providerPaymentId])
+}
+
+model PaymentWebhookEvent {
+  id              String          @id @default(uuid()) @db.Uuid
+  provider        PaymentProvider
+  eventType       String
+  externalEventId String?
+  payload         Json
+  processed       Boolean         @default(false)
+  processedAt     DateTime?
+  createdAt       DateTime        @default(now())
+
+  @@index([provider])
+  @@index([processed])
+  @@index([createdAt])
+  @@unique([provider, externalEventId])
 }
 
 model Pet {
