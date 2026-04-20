@@ -81,6 +81,29 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum VeterinarySpecialty {
+  GENERAL
+  SURGERY
+  DERMATOLOGY
+  CARDIOLOGY
+  OPHTHALMOLOGY
+  NEUROLOGY
+  ONCOLOGY
+  DENTISTRY
+  NUTRITION
+  EXOTIC_PETS
+  EMERGENCY
+  OTHER
+}
+
+enum AnnouncementType {
+  LOST_PET
+  FOUND_PET
+  ADOPTION
+  ADVERTISING
+  GENERAL
+}
+
 model UserProfile {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @unique @db.Uuid
@@ -102,6 +125,7 @@ model UserProfile {
   notifications    NotificationLog[] @relation("NotificationRecipient")
   subscriptions    Subscription[]    @relation("UserSubscriptions")
   payments         Payment[]         @relation("UserPayments")
+  announcements    Announcement[]    @relation("AnnouncementAuthor")
 
   @@index([role])
   @@index([city])
@@ -193,6 +217,7 @@ model Pet {
   bookings        Booking[]
   healthRecords   HealthRecord[]
   matchPreference MatchPreference?
+  announcements   Announcement[]   @relation("AnnouncementPet")
 
   @@index([ownerId])
   @@index([species])
@@ -335,4 +360,57 @@ model NotificationLog {
   @@index([recipientId])
   @@index([status])
   @@index([createdAt])
+}
+
+model Veterinary {
+  id           String                @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?
+  phone        String?
+  email        String?
+  website      String?
+  address      String
+  city         String
+  lat          Decimal?              @db.Decimal(10, 7)
+  lng          Decimal?              @db.Decimal(10, 7)
+  specialties  VeterinarySpecialty[] @default([GENERAL])
+  imageUrl     String?
+  isPartner    Boolean               @default(false)
+  isActive     Boolean               @default(true)
+  operatingHours Json?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([city])
+  @@index([isPartner])
+  @@index([isActive])
+}
+
+model Announcement {
+  id           String           @id @default(uuid()) @db.Uuid
+  authorId     String           @db.Uuid
+  type         AnnouncementType
+  title        String
+  description  String
+  imageUrl     String?
+  contactPhone String?
+  contactEmail String?
+  location     String?
+  city         String?
+  lat          Decimal?         @db.Decimal(10, 7)
+  lng          Decimal?         @db.Decimal(10, 7)
+  petId        String?          @db.Uuid
+  isActive     Boolean          @default(true)
+  expiresAt    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  author UserProfile @relation("AnnouncementAuthor", fields: [authorId], references: [userId], onDelete: Cascade)
+  pet    Pet?        @relation("AnnouncementPet", fields: [petId], references: [id], onDelete: SetNull)
+
+  @@index([authorId])
+  @@index([type])
+  @@index([city])
+  @@index([isActive])
+  @@index([expiresAt])
 }
